@@ -1,10 +1,17 @@
 const db = require('../models')
 
-const checkDb = (req, res) => {
-  db.sequelize.authenticate().then(
-    () => res.send('connected'),
-    () => res.send('error')
-  )
+const checkConnection = async (res) => {
+  try {
+    await db.sequelize.authenticate()
+    res.send('connected')
+    
+  }catch(e) {
+    res.send('failed to connect')
+  }
+}
+
+const checkDb = async (req, res) => {
+  checkConnection(res)
 }
 
 module.exports = checkDb
