@@ -4,18 +4,29 @@ const app = express()
 const config = require('./config')
 const checkIsLogin = require('./lib/checkIsLoggedIn')
 const checkDb = require('./routes/check-db')
-const bodyParser = require('body-parser')
+const { rootDir } = require('./helpers/path')
 
+const bodyParser = require('body-parser')
 const portfinder = require('portfinder')
 const morgan = require('morgan')
 const expressHbs = require('express-hbs')
-
 const path = require('path')
-const rootDir = path.resolve(__dirname)
+
 const viewsPath = path.join(rootDir, 'views')
+
+app.use('/uploads', express.static('uploads'))
 
 app.use(morgan('combined'))
 app.use(bodyParser.urlencoded({ extended: true }))
+
+const fileUpload = require('express-fileupload')
+
+app.use(
+  fileUpload({
+    createParentPath: true,
+    useTempFiles : true,
+  })
+)
 
 //Express Session Start
 const session = require('express-session')
@@ -50,17 +61,24 @@ app.set('views', viewsPath);
 // Route Start
 const login = require('./routes/login')
 const dashboard = (req, res) => res.render('./pages/dashboard')
-const users = (req, res) => res.render('./pages/users', { data : 'this is the data' })
+const users = require('./routes/users')
 
 const logOut = require('./lib/logOut')
 
 app.get('/', (req,res) => res.redirect('/login'))
+
 app.get('/login', login.get)
 app.post('/login', login.post)
 app.get('/logout', logOut)
 
 app.get('/dashboard', checkIsLogin, dashboard)
-app.get('/dashboard/users', checkIsLogin, users)
+
+app.get('/users', checkIsLogin, users.list)
+app.get('/users/create', checkIsLogin, users.create_get)
+app.post('/users/create', checkIsLogin, users.create_post)
+
+app.get('/users/:id', checkIsLogin, users.details)
+
 app.get('/check_db', checkDb)
 // Route End
 

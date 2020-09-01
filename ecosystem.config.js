@@ -3,7 +3,8 @@ module.exports = {
   {
     name: 'server',
     script: 'index.js',
-    watch: '.'
+    watch: '.',
+    ignore_watch: ['./uploads', './tmp']
   }
 ]
 };
